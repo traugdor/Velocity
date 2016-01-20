@@ -1,0 +1,80 @@
+#set ( $pageroot = $_XPathTool.selectSingleNode($contentRoot, "/system-index-block") )
+#set ( $callingpage = $_XPathTool.selectSingleNode($pageroot, "calling-page") )
+#set ( $navigations = $_XPathTool.selectNodes($pageroot, "system-block") )
+#set ( $callingpagepath = $_XPathTool.selectSingleNode($callingpage, "system-page/path").value )
+#set ( $pathlist = $callingpagepath.split("/") )
+#set ( $file = "" )
+#set ( $targetFolder = "" )
+#set ( $previousFolder = "" )
+#set ( $rootFolder = "" )
+#set ( $flag = 0 )
+#foreach ( $place in $pathlist )
+    ##---This will trickle down until $previousFolder and $targetFolder contain the appropriate locations and $file contains the calling page.
+    #if ( $flag == 0 && $place != "" )
+        #set ( $rootFolder = $place )
+        #set ( $flag = 1 )
+    #end
+    #set ( $previousFolder = $targetFolder )
+    #set ( $targetFolder = $file )
+    #set ( $file = $place )
+#end
+#set ( $navfound = false )
+#set ( $rootFound = false )
+#set ( $prevFound = false )
+#foreach ( $navset in $navigations )
+    #set ( $navname = $_XPathTool.selectSingleNode($navset, "name").value )
+    #if ( $navfound == false && $targetFolder == $navname)
+        #set ( $navfound = true )
+    #else
+        #if ( $navfound == false && $previousFolder == $navname )
+            #set ( $prevFound = true )
+        #else
+            #if ( $navfound == false && $rootFolder == $navname )
+                #set ( $rootFound = true )
+            #end
+        #end
+    #end
+#end
+#if ( $navfound == false)
+    #if ($prevFound == false )
+        #if ( $rootFound == false )
+            #printNav( "Main Navigation" )
+        #else
+            #printNav( $rootFolder )
+        #end
+    #else
+        #printNav( $previousFolder )
+    #end
+#else
+    #printNav( $targetFolder )
+#end
+
+#macro ( printNav $navigationName )
+        <ul>
+    #foreach ( $navset in $navigations )
+        #set ( $navname = $_XPathTool.selectSingleNode($navset, "name").value )
+        #if ( $navname == $navigationName )
+            #set ( $links = $_XPathTool.selectNodes($navset, "system-data-structure/link") )
+            <li style="list-style: none"></li>
+            #set ( $count = 0 )
+            #foreach ( $link in $links )
+                #if ( $link.getChild("ilink").getChild("path").value == "/" )
+                    #set ( $linkpath = $link.getChild("elink").value )
+                #else
+                    #set ( $linkpath = $link.getChild("ilink").getChild("link").value )
+                #end
+                #set ( $linktitle = $link.getChild("linktitle").value )
+                #if ( $count > 0 )
+                    <li style="list-style: none">
+                        <hr style="padding:0; margin:0;"/>
+                    </li>
+                #end
+                #set ( $count = $_MathTool.add($count, 1) )
+                <li class="project-single-description-item">
+                    <a href="${linkpath}">${linktitle}</a>
+                </li>
+            #end
+        #end
+    #end
+        </ul>
+#end

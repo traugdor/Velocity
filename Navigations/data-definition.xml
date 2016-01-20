@@ -1,0 +1,7 @@
+<system-data-structure>
+    <group identifier="link" label="Link" multiple="true">
+        <text identifier="linktitle" label="Link Title" required="true"/>
+        <asset type="page,file,symlink" identifier="ilink" label="Internal Link" help-text="If this is used, it will take precedence over the external link"/>
+        <text identifier="elink" label="External Link" default="http://" help-text="If this is used, make sure the Internal Link is blank."/>
+    </group>
+</system-data-structure>
