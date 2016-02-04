@@ -1,0 +1,55 @@
+#set ( $sib = $_XPathTool.selectSingleNode($contentRoot, "/system-index-block") )
+#set ( $cp = $_XPathTool.selectSingleNode($sib, "calling-page") )
+#set ( $pages = $_XPathTool.selectNodes($sib, "system-page") )
+#set ( $folders = $_XPathTool.selectNodes($sib, "system-folder") )
+#set ( $datetool = $_DateTool.getSystemTime() )
+#set ( $days = $cp.getChild("system-page").getChild("dynamic-metadata").getChild("value").value )
+#set ( $hours = $_MathTool.mul($days, 24) )
+#set ( $min = $_MathTool.mul($hours, 60) )
+#set ( $sec = $_MathTool.mul($min, 60) )
+#set ( $milli = $_MathTool.mul($sec, 1000) )
+#set ( $datecomp = $_MathTool.sub($datetool, $milli) )
+#set ( $todaysdate = $_DateTool.format('medium', $datetool) )
+<h1>New Content With Links</h1>
+Displaying all pages created or modified exactly $days days before $todaysdate.
+#foreach ( $folder in $folders)
+    #parsefolder($folder)
+#end
+<ul>
+#foreach ( $page in $pages )
+
+    #set ( $createdon = $page.getChild("last-modified").value )
+    #set ( $createddate = $_DateTool.getDate($createdon) )
+    #set ( $createdformat = $_DateTool.format('yyyy-MMM-dd h:mm a', $createddate) )
+    #set ( $timediff = $_MathTool.sub($createdon, $datecomp) )
+    #set ( $title = $page.getChild("title").value )
+    #if ( $timediff > 0 )
+        <li>Page: <a href="$page.getChild("link").value">${title}</a> modified $createdformat</li>
+    #end
+
+#end
+</ul>
+
+#macro ( parsefolder $foldertoparse )
+        #set ( $subpages = $_XPathTool.selectNodes($foldertoparse, "system-page") )
+        #set ( $subfolders = $_XPathTool.selectNodes($foldertoparse, "system-folder") )
+        #set ( $name = $foldertoparse.getChild("path").value )
+<ul>
+    <li>${name}</li>
+        #foreach ( $subfolder in $subfolders )
+            #parsefolder($subfolder)
+        #end
+        <ul>
+        #foreach ( $subpage in $subpages )
+            #set ( $createdon = $subpage.getChild("last-modified").value )
+            #set ( $createddate = $_DateTool.getDate($createdon) )
+            #set ( $createdformat = $_DateTool.format('yyyy-MMM-dd h:mm a', $createddate) )
+            #set ( $timediff = $_MathTool.sub($createdon, $datecomp) )
+            #set ( $title = $subpage.getChild("title").value )
+            #if ( $timediff > 0 )
+                <li><a href="$subpage.getChild("link").value">${title}</a> modified $createdformat</li>
+            #end
+        #end
+        </ul>
+</ul>
+#end
